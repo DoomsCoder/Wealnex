@@ -8,7 +8,7 @@ import useFetch from "@/hooks/use-fetch";
 import { scanReceipt } from "@/actions/transaction";
 
 export function ReceiptScanner({ onScanComplete }) {
-  const fileInputRef = useRef(null);  
+  const fileInputRef = useRef(null);
 
   const {
     loading: scanReceiptLoading,
@@ -39,7 +39,6 @@ export function ReceiptScanner({ onScanComplete }) {
         ref={fileInputRef}
         className="hidden"
         accept="image/*"
-        capture="environment"
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) handleReceiptScan(file);
