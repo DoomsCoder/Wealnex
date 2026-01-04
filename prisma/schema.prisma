@@ -41,17 +41,7 @@ model Account {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
-  // Linked Account Fields (Setu AA)
-  isLinked          Boolean       @default(false)
-  aaConsentId       String?       // Setu consent ID
-  aaConsentStatus   String?       // PENDING, ACTIVE, REVOKED, EXPIRED
-  institutionName   String?       // Bank name (e.g., "HDFC Bank")
-  maskedAccNumber   String?       // Masked account number (XXXX1234)
-  lastSyncedAt      DateTime?     // Last transaction sync time
-  syncStatus        SyncStatus    @default(NEVER)
-
   @@index([userId])
-  @@index([aaConsentId])
   @@map("accounts")
 }
 
@@ -75,13 +65,8 @@ model Transaction {
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
-  // Linked Account Transaction Fields
-  isAutoSynced      Boolean           @default(false) // true = from bank, false = manual
-  externalId        String?           // Bank's transaction ID (prevent duplicates)
-
   @@index([userId])
   @@index([accountId])
-  @@index([externalId])
   @@map("transactions")
 }
 
@@ -120,11 +105,4 @@ enum RecurringInterval {
   WEEKLY
   MONTHLY
   YEARLY
-}
-
-enum SyncStatus {
-  NEVER
-  SYNCING
-  SYNCED
-  ERROR
 }
