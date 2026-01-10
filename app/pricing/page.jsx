@@ -8,58 +8,77 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { toast } from "sonner";
 import Link from "next/link";
 
-const getPlans = (isYearly) => [
-    {
-        id: "FREE",
-        name: "Free",
-        price: "₹0",
-        period: "forever",
-        description: "Get started with manual expense tracking",
-        features: [
-            "Unlimited manual accounts",
-            "Transaction tracking",
-            "Basic budget alerts",
-            "AI insights (3/month)",
-        ],
-        cta: "Current Plan",
-        disabled: true,
-    },
-    {
-        id: "PRO",
-        name: "Pro",
-        price: isYearly ? "₹999" : "₹149",
-        period: isYearly ? "/year" : "/month",
-        description: "Full power with bank linking and AI",
-        features: [
-            "Everything in Free",
-            "Bank linking via Account Aggregator",
-            "Auto-sync transactions",
-            "Unlimited AI insights",
-            "Export reports (CSV/PDF)",
-        ],
-        cta: "Upgrade to Pro",
-        popular: true,
-        icon: Crown,
-        savings: isYearly ? "Save ₹789" : null,
-    },
-    {
-        id: "BUSINESS",
-        name: "Business",
-        price: "Contact Us",
-        period: "",
-        description: "Team finance management",
-        features: [
-            "Everything in Pro",
-            "Multi-user access",
-            "API access",
-            "Priority support",
-        ],
-        cta: "Coming Soon",
-        comingSoon: true,
-        disabled: true,
-        icon: Building2,
-    },
-];
+const getPlans = (isYearly, currentPlan, billingPeriod) => {
+    // For Pro users, show their actual billing period regardless of toggle
+    const isProUser = currentPlan === "PRO";
+    const userIsMonthly = billingPeriod === "monthly";
+    const userIsYearly = billingPeriod === "yearly";
+
+    // Determine what price to show for Pro card
+    let proPrice, proPeriod;
+    if (isProUser && billingPeriod) {
+        // Show user's actual billing
+        proPrice = userIsYearly ? "₹999" : "₹149";
+        proPeriod = userIsYearly ? "/year" : "/month";
+    } else {
+        // For Free users, follow the toggle
+        proPrice = isYearly ? "₹999" : "₹149";
+        proPeriod = isYearly ? "/year" : "/month";
+    }
+
+    return [
+        {
+            id: "FREE",
+            name: "Free",
+            price: "₹0",
+            period: "forever",
+            description: "Get started with manual expense tracking",
+            features: [
+                "Unlimited manual accounts",
+                "Transaction tracking",
+                "Basic budget alerts",
+                "AI insights (3/month)",
+            ],
+            cta: currentPlan === "FREE" ? "Current Plan" : "Get Started Free",
+            disabled: currentPlan === "FREE",
+        },
+        {
+            id: "PRO",
+            name: "Pro",
+            price: proPrice,
+            period: proPeriod,
+            description: "Full power with bank linking and AI",
+            features: [
+                "Everything in Free",
+                "Bank linking via Account Aggregator",
+                "Auto-sync transactions",
+                "Unlimited AI insights",
+                "Export reports (CSV/PDF)",
+            ],
+            cta: "Upgrade to Pro",
+            popular: true,
+            icon: Crown,
+            savings: isYearly && !isProUser ? "Save ₹789" : null,
+        },
+        {
+            id: "BUSINESS",
+            name: "Business",
+            price: "Contact Us",
+            period: "",
+            description: "Team finance management",
+            features: [
+                "Everything in Pro",
+                "Multi-user access",
+                "API access",
+                "Priority support",
+            ],
+            cta: "Coming Soon",
+            comingSoon: true,
+            disabled: true,
+            icon: Building2,
+        },
+    ];
+};
 
 export default function PricingPage() {
     const router = useRouter();
@@ -69,7 +88,7 @@ export default function PricingPage() {
     const [upgrading, setUpgrading] = useState(false);
     const [isYearly, setIsYearly] = useState(false);
 
-    const plans = getPlans(isYearly);
+    const plans = getPlans(isYearly, currentPlan, billingPeriod);
 
     useEffect(() => {
         // Fetch current plan and billing period
@@ -224,30 +243,39 @@ export default function PricingPage() {
                         Start free, upgrade when you're ready. No hidden fees.
                     </p>
 
-                    {/* Billing Toggle */}
-                    <div className="inline-flex items-center gap-4 p-1.5 rounded-full bg-muted/50 border border-border">
-                        <button
-                            onClick={() => setIsYearly(false)}
-                            className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${!isYearly
-                                ? "bg-background text-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
-                                }`}
-                        >
-                            Monthly
-                        </button>
-                        <button
-                            onClick={() => setIsYearly(true)}
-                            className={`px-6 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${isYearly
-                                ? "bg-background text-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
-                                }`}
-                        >
-                            Yearly
-                            <span className="text-xs bg-green-500/10 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full">
-                                Save ₹789
+                    {/* Billing Toggle - Only show for FREE users */}
+                    {currentPlan === "FREE" ? (
+                        <div className="inline-flex items-center gap-4 p-1.5 rounded-full bg-muted/50 border border-border">
+                            <button
+                                onClick={() => setIsYearly(false)}
+                                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${!isYearly
+                                    ? "bg-background text-foreground shadow-sm"
+                                    : "text-muted-foreground hover:text-foreground"
+                                    }`}
+                            >
+                                Monthly
+                            </button>
+                            <button
+                                onClick={() => setIsYearly(true)}
+                                className={`px-6 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${isYearly
+                                    ? "bg-background text-foreground shadow-sm"
+                                    : "text-muted-foreground hover:text-foreground"
+                                    }`}
+                            >
+                                Yearly
+                                <span className="text-xs bg-green-500/10 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full">
+                                    Save ₹789
+                                </span>
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+                            <Crown className="h-4 w-4 text-primary" />
+                            <span className="text-sm text-primary font-medium">
+                                You're on Pro ({billingPeriod === "yearly" ? "Yearly" : "Monthly"})
                             </span>
-                        </button>
-                    </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Pricing Cards */}
