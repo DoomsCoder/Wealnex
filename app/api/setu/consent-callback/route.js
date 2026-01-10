@@ -3,6 +3,24 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
 import { getConsentStatus, createDataSession, fetchSessionData, parseSetuTransactions } from "@/lib/setu";
 
+// Helper to get the correct base URL for redirects
+function getBaseUrl(request) {
+    // First try environment variable
+    if (process.env.NEXT_PUBLIC_APP_URL) {
+        return process.env.NEXT_PUBLIC_APP_URL;
+    }
+
+    // Try to get from request headers (works in production)
+    const host = request.headers.get('host');
+    const protocol = request.headers.get('x-forwarded-proto') || 'https';
+
+    if (host && !host.includes('localhost')) {
+        return `${protocol}://${host}`;
+    }
+
+    // Fallback to Render URL if we know it
+    return 'https://wealnex.onrender.com';
+}
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
@@ -24,14 +42,14 @@ export async function GET(request) {
         if (!consentId) {
             // Redirect to dashboard with error
             console.error('Missing consent ID in callback');
-            return NextResponse.redirect(new URL('/dashboard?error=missing_consent_id', request.url));
+            return NextResponse.redirect(new URL('/dashboard?error=missing_consent_id', getBaseUrl(request)));
         }
 
         // Check if user explicitly rejected or cancelled
         if (success === 'false') {
             console.log('User rejected/cancelled consent:', errorMsg || errorCode);
             return NextResponse.redirect(
-                new URL(`/dashboard?error=consent_rejected&message=${encodeURIComponent(errorMsg || 'Consent was not approved')}`, request.url)
+                new URL(`/dashboard?error=consent_rejected&message=${encodeURIComponent(errorMsg || 'Consent was not approved')}`, getBaseUrl(request))
             );
         }
 
@@ -39,7 +57,7 @@ export async function GET(request) {
         const { userId } = await auth();
         if (!userId) {
             console.error('No user session found during callback');
-            return NextResponse.redirect(new URL('/sign-in', request.url));
+            return NextResponse.redirect(new URL('/sign-in', getBaseUrl(request)));
         }
 
         const user = await db.user.findUnique({
@@ -48,7 +66,7 @@ export async function GET(request) {
 
         if (!user) {
             console.error('User not found in database:', userId);
-            return NextResponse.redirect(new URL('/dashboard?error=user_not_found', request.url));
+            return NextResponse.redirect(new URL('/dashboard?error=user_not_found', getBaseUrl(request)));
         }
 
         console.log('User found:', user.id, 'fetching consent status...');
@@ -61,7 +79,7 @@ export async function GET(request) {
             // Consent was rejected or expired
             console.log('Consent not active:', consentData.status);
             return NextResponse.redirect(
-                new URL(`/dashboard?error=consent_${consentData.status.toLowerCase()}`, request.url)
+                new URL(`/dashboard?error=consent_${consentData.status.toLowerCase()}`, getBaseUrl(request))
             );
         }
 
@@ -297,11 +315,11 @@ export async function GET(request) {
         }
 
         // Redirect to dashboard with success
-        return NextResponse.redirect(new URL('/dashboard?success=bank_linked', request.url));
+        return NextResponse.redirect(new URL('/dashboard?success=bank_linked', getBaseUrl(request)));
     } catch (error) {
         console.error("Consent callback error:", error);
         return NextResponse.redirect(
-            new URL(`/dashboard?error=${encodeURIComponent(error.message)}`, request.url)
+            new URL(`/dashboard?error=${encodeURIComponent(error.message)}`, getBaseUrl(request))
         );
     }
 }
