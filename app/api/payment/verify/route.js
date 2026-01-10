@@ -57,12 +57,22 @@ export async function POST(req) {
             console.log("Could not fetch order details:", orderError);
         }
 
-        // Update user to Pro with billing period
+        // Calculate expiration date based on billing period
+        const now = new Date();
+        let expiresAt;
+        if (billingPeriod === "yearly") {
+            expiresAt = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000); // 365 days
+        } else {
+            expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days
+        }
+
+        // Update user to Pro with billing period and expiration
         const updatedUser = await db.user.update({
             where: { id: user.id },
             data: {
                 plan: "PRO",
-                planActivatedAt: new Date(),
+                planActivatedAt: now,
+                planExpiresAt: expiresAt,
                 billingPeriod: billingPeriod,
             },
         });

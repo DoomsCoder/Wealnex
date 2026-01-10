@@ -54,7 +54,7 @@ export async function POST(req) {
     }
 }
 
-// Get current user's plan
+// Get current user's plan (with expiration check)
 export async function GET(req) {
     try {
         const { userId } = await auth();
@@ -62,18 +62,57 @@ export async function GET(req) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
+        // Fetch user with all plan-related fields
         const user = await db.user.findUnique({
             where: { clerkUserId: userId },
-            select: { plan: true, billingPeriod: true },
+            select: {
+                id: true,
+                plan: true,
+                billingPeriod: true,
+                planExpiresAt: true,
+            },
         });
 
         if (!user) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
+        // Check if Pro plan has expired
+        let currentPlan = user.plan || "FREE";
+        let wasDowngraded = false;
+
+        if (user.plan === "PRO" && user.planExpiresAt) {
+            const now = new Date();
+            const expiresAt = new Date(user.planExpiresAt);
+
+            if (now > expiresAt) {
+                // Plan has expired - downgrade to FREE
+                console.log(`User plan expired. Downgrading to FREE.`);
+
+                await db.user.update({
+                    where: { id: user.id },
+                    data: { plan: "FREE" },
+                });
+
+                currentPlan = "FREE";
+                wasDowngraded = true;
+            }
+        }
+
+        // Calculate days remaining if Pro
+        let daysRemaining = null;
+        if (currentPlan === "PRO" && user.planExpiresAt) {
+            const now = new Date();
+            const expiresAt = new Date(user.planExpiresAt);
+            daysRemaining = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        }
+
         return NextResponse.json({
-            plan: user.plan || "FREE",
-            billingPeriod: user.billingPeriod || null
+            plan: currentPlan,
+            billingPeriod: user.billingPeriod || null,
+            planExpiresAt: user.planExpiresAt,
+            daysRemaining: daysRemaining,
+            wasDowngraded: wasDowngraded,
         });
     } catch (error) {
         console.error("Get plan error:", error);
