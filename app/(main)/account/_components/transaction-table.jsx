@@ -378,7 +378,7 @@ export function TransactionTable({ transactions }) {
                         : "text-green-500"
                     )}
                   >
-                    {transaction.type === "EXPENSE" ? "-" : "+"}$
+                    {transaction.type === "EXPENSE" ? "-" : "+"}₹
                     {transaction.amount.toFixed(2)}
                   </TableCell>
                   <TableCell>
@@ -393,7 +393,7 @@ export function TransactionTable({ transactions }) {
                               <RefreshCw className="h-3 w-3" />
                               {
                                 RECURRING_INTERVALS[
-                                  transaction.recurringInterval
+                                transaction.recurringInterval
                                 ]
                               }
                             </Badge>

@@ -101,7 +101,7 @@ export function AccountCard({ account }) {
                 e.stopPropagation();
                 setIsDeleteDialogOpen(true);
               }}
-              className="p-2 rounded-full bg-gray-100 hover:bg-red-100 text-gray-400 hover:text-red-600 transition-colors shadow-sm"
+              className="p-2 rounded-full bg-muted hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors shadow-sm"
               title="Delete account"
             >
               <Trash2 className="h-4 w-4" />
@@ -143,7 +143,7 @@ export function AccountCard({ account }) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            ${parseFloat(balance).toFixed(2)}
+            ₹{parseFloat(balance).toFixed(2)}
           </div>
           <p className="text-xs text-muted-foreground">
             {type.charAt(0) + type.slice(1).toLowerCase()} Account

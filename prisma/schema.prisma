@@ -20,6 +20,13 @@ model User {
   email         String    @unique
   name          String?
   imageUrl      String?
+  plan          Plan      @default(FREE) // Subscription plan
+  planActivatedAt DateTime? // When Pro/Business plan was activated
+  monthlyScansUsed Int    @default(0)    // Receipt scans used this month
+  lastScanReset DateTime? // Last time scan count was reset
+  monthlyInsightsViewed Int @default(0)  // AI insights viewed this month
+  lastInsightsReset DateTime? // Last time insights count was reset
+  lastInsightsViewed DateTime? // Last time user viewed insights (for rate limiting)
   transactions  Transaction[]
   accounts      Account[]
   budgets       Budget[]
@@ -30,16 +37,25 @@ model User {
 }
 
 model Account {
-  id           String        @id @default(uuid())
-  name         String
-  type         AccountType
-  balance      Decimal       @default(0) // will ask inital balance while creating an account
-  isDefault    Boolean       @default(false)
-  userId       String
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions Transaction[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id              String        @id @default(uuid())
+  name            String
+  type            AccountType
+  balance         Decimal       @default(0) // will ask inital balance while creating an account
+  isDefault       Boolean       @default(false)
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions    Transaction[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Account Aggregator (AA) fields for linked bank accounts
+  isLinked        Boolean       @default(false)
+  aaConsentId     String?       // Consent ID from Setu AA
+  aaConsentStatus String?       // PENDING, ACTIVE, REVOKED, etc.
+  institutionName String?       // Bank/FIP name
+  maskedAccNumber String?       // Masked account number from FIP
+  lastSyncedAt    DateTime?     // Last successful transaction sync
+  syncStatus      String?       // NEVER, SYNCING, SYNCED, ERROR
 
   @@index([userId])
   @@map("accounts")
@@ -105,4 +121,10 @@ enum RecurringInterval {
   WEEKLY
   MONTHLY
   YEARLY
+}
+
+enum Plan {
+  FREE
+  PRO
+  BUSINESS
 }
