@@ -117,8 +117,8 @@ export function LinkBankButton() {
                 onClick={handleButtonClick}
                 disabled={planLoading}
                 className={`relative overflow-hidden border-2 border-dashed transition-all group ${isPro
-                        ? "border-blue-300 hover:border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 dark:from-blue-950/30 dark:to-indigo-950/30"
-                        : "border-amber-300 hover:border-amber-500 bg-gradient-to-br from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 dark:from-amber-950/30 dark:to-orange-950/30"
+                    ? "border-blue-300 hover:border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 dark:from-blue-950/30 dark:to-indigo-950/30"
+                    : "border-amber-300 hover:border-amber-500 bg-gradient-to-br from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 dark:from-amber-950/30 dark:to-orange-950/30"
                     }`}
             >
                 <div className="flex items-center gap-2">
@@ -179,7 +179,7 @@ export function LinkBankButton() {
                                 maxLength={10}
                             />
                             <p className="text-xs text-muted-foreground">
-                                For sandbox testing, use: 9999999999
+                                Enter your mobile number linked to your bank account
                             </p>
                         </div>
 

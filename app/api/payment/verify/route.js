@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
-import { verifyPaymentSignature } from "@/lib/razorpay";
+import razorpay, { verifyPaymentSignature } from "@/lib/razorpay";
 
 export async function POST(req) {
     try {
@@ -46,12 +46,24 @@ export async function POST(req) {
             );
         }
 
-        // Payment verified! Update user to Pro
+        // Payment verified! Fetch order details to get billing period
+        let billingPeriod = "monthly"; // Default to monthly
+        try {
+            const order = await razorpay.getInstance().orders.fetch(razorpay_order_id);
+            if (order.notes && order.notes.billingPeriod) {
+                billingPeriod = order.notes.billingPeriod;
+            }
+        } catch (orderError) {
+            console.log("Could not fetch order details:", orderError);
+        }
+
+        // Update user to Pro with billing period
         const updatedUser = await db.user.update({
             where: { id: user.id },
             data: {
                 plan: "PRO",
                 planActivatedAt: new Date(),
+                billingPeriod: billingPeriod,
             },
         });
 

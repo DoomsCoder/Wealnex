@@ -209,7 +209,7 @@ export function UpgradeModal({ open, onOpenChange, feature = "this feature" }) {
                     {/* Demo Notice */}
                     <div className="mt-4 flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
                         <Sparkles className="h-3 w-3" />
-                        <span>🧪 Razorpay Sandbox — Use test card 4111 1111 1111 1111</span>
+                        <span>🧪 Razorpay Sandbox — Test Card: 5267 3181 8797 5449</span>
                     </div>
                 </div>
 

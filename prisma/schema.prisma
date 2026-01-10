@@ -22,6 +22,7 @@ model User {
   imageUrl      String?
   plan          Plan      @default(FREE) // Subscription plan
   planActivatedAt DateTime? // When Pro/Business plan was activated
+  billingPeriod String?     // "monthly" or "yearly" for Pro plan
   monthlyScansUsed Int    @default(0)    // Receipt scans used this month
   lastScanReset DateTime? // Last time scan count was reset
   monthlyInsightsViewed Int @default(0)  // AI insights viewed this month

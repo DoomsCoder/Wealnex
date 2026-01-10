@@ -64,6 +64,7 @@ const getPlans = (isYearly) => [
 export default function PricingPage() {
     const router = useRouter();
     const [currentPlan, setCurrentPlan] = useState("FREE");
+    const [billingPeriod, setBillingPeriod] = useState(null);
     const [loading, setLoading] = useState(false);
     const [upgrading, setUpgrading] = useState(false);
     const [isYearly, setIsYearly] = useState(false);
@@ -71,11 +72,16 @@ export default function PricingPage() {
     const plans = getPlans(isYearly);
 
     useEffect(() => {
-        // Fetch current plan
+        // Fetch current plan and billing period
         fetch("/api/upgrade")
             .then((res) => res.json())
             .then((data) => {
                 if (data.plan) setCurrentPlan(data.plan);
+                if (data.billingPeriod) {
+                    setBillingPeriod(data.billingPeriod);
+                    // Set toggle to match user's billing period
+                    setIsYearly(data.billingPeriod === "yearly");
+                }
             })
             .catch(console.error);
     }, []);
@@ -338,7 +344,7 @@ export default function PricingPage() {
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20">
                         <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                         <span className="text-sm text-amber-600 dark:text-amber-400">
-                            🧪 Demo Mode — Razorpay Sandbox (No real payment) • Test Card: 4111 1111 1111 1111
+                            🧪 Demo Mode — Razorpay Sandbox (No real payment) • Test Card: 5267 3181 8797 5449
                         </span>
                     </div>
                 </div>

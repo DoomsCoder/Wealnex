@@ -64,14 +64,17 @@ export async function GET(req) {
 
         const user = await db.user.findUnique({
             where: { clerkUserId: userId },
-            select: { plan: true },
+            select: { plan: true, billingPeriod: true },
         });
 
         if (!user) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        return NextResponse.json({ plan: user.plan || "FREE" });
+        return NextResponse.json({
+            plan: user.plan || "FREE",
+            billingPeriod: user.billingPeriod || null
+        });
     } catch (error) {
         console.error("Get plan error:", error);
         return NextResponse.json(
