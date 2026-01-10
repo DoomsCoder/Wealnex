@@ -41,7 +41,7 @@ export async function POST(req) {
         // Receipt must be max 40 chars
         const receiptId = `pro_${user.id.slice(0, 8)}_${Date.now().toString(36)}`;
 
-        const order = await razorpay.orders.create({
+        const order = await razorpay.getInstance().orders.create({
             amount: amount,
             currency: "INR",
             receipt: receiptId,
